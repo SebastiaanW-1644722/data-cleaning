@@ -19,6 +19,10 @@ def clean_table(settings, foreign_keys, table):
     cleaned_df = clean_clustered_columns(table, cleaned_df)
 
     path = table.path
+    if path.startswith("id:"):
+        #TODO: Write google drive results to the drive 
+        pass
+
     cleaned_at = datetime.now().strftime("%Y-%m-%d--%H-%M-%S")
     filename = table.name + "_CLEANED_" + cleaned_at + ".csv"
     path_and_filename = os.path.join(path, filename)

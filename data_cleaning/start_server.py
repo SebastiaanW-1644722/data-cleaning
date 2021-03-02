@@ -67,7 +67,7 @@ def rules(tablename):
         foreignkeys = foreign_keys.to_list_of_dicts()
         foreignkeys = [fk for fk in foreignkeys if fk['from_table'] == tablename]
         clusters = {col: clustering.get_clusters_as_dictionaries() for col, clustering in table.clusters.items()}
-        functional_dependencies = table.rules.functional_dependency_discovery.functional_dependencies
+        functional_dependencies = table.rules.functional_dependency_discovery.results
         return render_template("rules.html", tablenames=tablenames, tablename=tablename,
                                columns=table.columns, clustercolumns=table.rules.cluster_columns,
                                nonclustercolumns=table.rules.non_cluster_columns,
@@ -75,9 +75,9 @@ def rules(tablename):
                                selected_dc=table.rules.dc_ids_selected,
                                foreign_keys=foreignkeys, uniqueconstraints=table.rules.unique_constraints,
                                clusters=clusters, filter_percentage=100,
-                               functional_dependencies=functional_dependencies), 200
+                               functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters()), 200
     else:
-        return "", 404
+        return "Error", 404
 
 
 @app.route('/setclustercolumns/<string:tablename>', methods=["POST"])
@@ -301,11 +301,40 @@ def clean(tablename):
         traceback.print_exc()
         return str(e), 500
 
+@app.route('/discover_fds/<string:tablename>', methods=["GET"])
+def discover_fds(tablename):
+    try:
+        if tablename in tables:
+            table = tables[tablename]
+            functional_dependencies = table.rules.functional_dependency_discovery.calc_fds()
+            fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters())
 
-port = 5000
-options, remainder = getopt.getopt(sys.argv[1:], "p:", ["port="])
-for opt, arg in options:
-    if opt in ('-p', '--port'):
-        port = int(arg)
+            return fds_template, 200
+        else:
+            return "Table does not exist", 404
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        return str(e), 500
 
-app.run(debug=False, port=port)
+@app.route('/setdiscoveryparameters/<string:tablename>', methods=["POST"])
+def setdiscoveryparameters(tablename):
+    try:
+        if tablename in tables:
+            table = tables[tablename]
+            table.rules.functional_dependency_discovery.set_parameters(request.json)
+            return '', 200
+        else:
+            return "Table does not exist", 404
+    except Exception as e:
+        print(e)
+        return str(e), 500
+
+if __name__ == "__main__":
+    port = 5000
+    options, remainder = getopt.getopt(sys.argv[1:], "p:", ["port="])
+    for opt, arg in options:
+        if opt in ('-p', '--port'):
+            port = int(arg)
+
+    app.run(debug=False, port=port)

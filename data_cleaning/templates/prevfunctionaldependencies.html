@@ -1,0 +1,191 @@
+<p style="margin-bottom: 20px"><i>A functional dependency A -> B means that the contents of B are determined by the
+    contents of A. A is called the left-hand-side and B the right-hand-side. There cannot exists two tuples with the
+    same value for A but a different value for B.
+    To choose what needs to happen when a functional dependency is being violated, go to settings or click <a
+        href="{{ url_for('settings') }}">here</a> and change the 'on functional dependency violation' action.</i>
+</p>
+<div id="parameters" class="card mb-3 bg-light">
+<div class="card-header" id="parametersHeading">
+    <h5 class="mb-0">
+        <button class="btn btn-block" data-toggle="collapse" data-target="#parametersCollapse" aria-expanded="true"
+            aria-controls="parametersCollapse">
+            Parameters
+        </button>
+    </h5>
+</div>
+
+<div id="parametersCollapse" class="collapse" aria-labelledby="parametersHeading">
+    <div class="card-body">
+        <form id="parameters">
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="thresholdtable" {{'checked' if
+                        fd_parameters.threshold_table }}>
+                    <label class="form-check-label" for="thresholdtable">
+                        Eliminate Small Blocks
+                    </label>
+                    <small id="thresholdtablehelp" class="form-text text-muted">
+                        If this box is checked, the tool will automatically eliminate small blocks. E.g. if the LHS
+                        is country and Belgium occurs only once, it will not be used in the calculation.
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="includenulls" {{'checked' if
+                        fd_parameters.include_nulls }}>
+                    <label class="form-check-label" for="includenulls">
+                        Include NULL-values
+                    </label>
+                    <small id="thresholdtablehelp" class="form-text text-muted">
+                        If checked, NULLs will also be used in the calculation. If not, rows with NULLs will be
+                        skipped.
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="bincolumns" {{'checked' if
+                        fd_parameters.bin_columns }}>
+                    <label class="form-check-label" for="bin">
+                        Bin Columns (date and decimal)
+                    </label>
+                    <small id="binhelp" class="form-text text-muted">
+                        If checked, dates and decimals will be binned into intervals. If not, date or decimal
+                        columns will be skipped.
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="sample" {{'checked' if
+                        fd_parameters.sample }}>
+                    <label class="form-check-label" for="sample">
+                        Sample
+                    </label>
+                    <small id="samplehelp" class="form-text text-muted">
+                        If this box is checked, the tool will use a sample of the dataset.
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="samplesize">Sample Size</label>
+                <input type="number" min="0" max="1" step="0.01" class="form-control" id="samplesize"
+                    value="{{ fd_parameters.sample_size }}">
+                <small id="samplesizehelp" class="form-text text-muted">
+                    The sample size (between 0.01 and 1). E.g. for a value of 0.01, the tool will use 1% of the
+                    dataset. Use zero to let the tool decide on the sample size.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="fdthreshold">FD Score Threshold</label>
+                <input type="number" min="0" max="1" step="0.01" class="form-control" id="fdthreshold"
+                    value="{{ fd_parameters.fd_threshold }}">
+                <small id="fdthresholdhelp" class="form-text text-muted">
+                    A LHS &rarr; RHS will only be considered an FD if the score is above this value. We recommend
+                    not to set this to lower than 0.9.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="workers">Workers</label>
+                <input type="number" min="1" step="1" class="form-control" id="workers"
+                    value="{{ fd_parameters.workers }}">
+                <small id="workershelp" class="form-text text-muted">
+                    The amount of parallel processes that will be discovering FDs. The maximum is the number of
+                    cores on your machine. If higher, the number of cores on your machine will be used.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="arity">Arity</label>
+                <input type="number" min="1" max="5" step="1" class="form-control" id="arity"
+                    value="{{ fd_parameters.arity }}">
+                <small id="arityhelp" class="form-text text-muted">
+                    The number of elements in the LHS. E.g. CITY &rarr; COUNTRY has arity 1. The higher the arity,
+                    the more possible FDs and the higher the complexity.
+                </small>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<button id="discover_fds" data-table="{{ tablename }}" class="btn btn-primary d-block btn-md mb-3">Start
+Discovery</button>
+<div id="fds_loading" class="d-none justify-content-center">
+<div class="spinner-border text-primary" role="status">
+    <span class="sr-only">Loading...</span>
+</div>
+</div>
+<div id="fd_results">
+{% if functional_dependencies.items()|length > 0 %}
+<!-- <h5>Found ... functional dependencies</h5> -->
+<button id="select-all" type="button" class="d-none btn btn-outline-secondary btn-sm">Select all</button>
+<button id="unselect-all" type="button" class="d-none btn btn-outline-secondary btn-sm">Deselect all</button>
+<div class="table-responsive mt-3">
+    <div id="ScoreAccordion">
+        {% for scoring_category, scores in functional_dependencies.items() %}
+        {% for measure_category, measures in scores.items() %}
+        
+        {% if measures|length > 0 %}
+        {% for rhs, values in measures.items() %}
+        <div class="card">
+            <div class="card-header" id="RHSHeading{{ rhs }}">
+                <h5 class="mb-0">
+                    <button class="btn btn-block" data-toggle="collapse" data-target="#RHSCollapse{{ rhs }}"
+                        aria-expanded="true" aria-controls="RHSCollapse{{ rhs }}">
+                        _ &rarr; {{ rhs }}
+                    </button>
+                </h5>
+            </div>
+
+            <div id="RHSCollapse{{ rhs }}" class="collapse" aria-labelledby="RHSHeading{{ rhs }}"
+                data-parent="#RHSAccordion">
+                <div class="card-body">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <th scope="col">Select</th>
+                            <th scope="col">Left-hand-side</th>
+                            <th scope="col">&rarr;</th>
+                            <th scope="col">Right-hand-side</th>
+                            <th scope="col">Score</th>
+                        </thead>
+                        <tbody>
+                            {% for result in values %}
+                            <tr data-toggle="collapse" data-target="#accordion{{','.join(result.columns)}}" aria-expanded="true" >
+                                <td><input type="checkbox" checked></td>
+                                <td>{{" , ".join(result.columns[:-1])}}</td>
+                                <td>&rarr;</td>
+                                <td>{{result.columns[-1]}}</td>
+                                <td>{{ result.scores.values()|max }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5">
+                                    <div id="accordion{{','.join(result.columns)}}" class="collapse">Hidden by default</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<p>No functional dependencies found.</p>
+{% endif %}
+<p id="tablename" hidden>{{ tablename }}</p>
+</div>
+<p id="discovery_error" class="d-none">Error in discovery, please try again.</p>

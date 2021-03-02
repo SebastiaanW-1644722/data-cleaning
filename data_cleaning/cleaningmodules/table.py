@@ -10,10 +10,10 @@ from .actions import OnNullValue
 
 
 class Table:
-    def __init__(self, name, path, path_and_filename):
+    def __init__(self, name, path, df):
         self.path = path
         self.name = name
-        self.df = self.read_table(path_and_filename)
+        self.df = df
         self.columns = list(self.df.columns)
         self.column_types = self.detect_coltypes()
         self.characteristics = self.detect_characteristics()
@@ -25,7 +25,7 @@ class Table:
         on_null_detection = dict.fromkeys(self.columns, OnNullValue.FLAG)
         date_columns = [column for column in self.columns if np.issubdtype(self.get_column_type(column), np.datetime64)]
         self.rules = Rules(cluster_columns, non_cluster_columns, denial_constraints, outlier_detection,
-                           on_null_detection, date_columns, FunctionalDependencyDiscovery(self))
+                           on_null_detection, date_columns, FunctionalDependencyDiscovery(name, df))
 
         self.results = False
         self.clusters = {}  # key = column name and value contains the clusters
@@ -107,16 +107,6 @@ class Table:
                 else:
                     col_types[col] = type
         return col_types
-
-    def read_table(self, path):
-        warnings.simplefilter("ignore")
-        flag_columns = ["FOREIGN_KEY_VIOLATION", "SMALLER_THAN_VIOLATION", "NULL_FLAG", "FUTURE_DATE_FLAG",
-                        "FOREIGN_KEY_VIOLATION_INFO", "SMALLER_THAN_VIOLATION_INFO", "NULL_FLAG_INFO",
-                        "FUTURE_DATE_FLAG_INFO", "DUPLICATE_FLAG_MESSAGE", "OUTLIER_FLAG_INFO"]
-        df = pd.read_csv(path, usecols=lambda x: x not in flag_columns)
-        warnings.simplefilter("default")
-
-        return df
 
     def parse_to_dates(self, col):
         """

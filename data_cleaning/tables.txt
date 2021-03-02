@@ -1,3 +1,1 @@
-G:/My Drive/path/table.csv
-G:/My Drive/path/table2.csv
-G:/My Drive/path/table3.csv
+/Users/sebastiaanweytjens/Downloads/50000 Sales Records.csv
