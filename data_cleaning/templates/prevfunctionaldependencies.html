@@ -163,7 +163,7 @@ Discovery</button>
                                 <td>{{" , ".join(result.columns[:-1])}}</td>
                                 <td>&rarr;</td>
                                 <td>{{result.columns[-1]}}</td>
-                                <td>{{ result.scores.values()|max }}</td>
+                                <td>{{ "%.3f"|format(result.scores.values()|max) }}</td>
                             </tr>
                             <tr>
                                 <td colspan="5">
