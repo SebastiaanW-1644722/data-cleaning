@@ -188,12 +188,12 @@ function loadMetaData(fd) {
     var rhsDistribution = fd.most_frequent_y
     drawDistributionChart(rhsCanvasId, rhsDistribution)
 
-    //Dirty examples (default value, dirty values, percentages)
-    var dirtydataCanvasId = "dirtydata" + fd.columns.join("_")
-    var dirtyData = fd.dirty_data
-    drawDirtyDataChart(dirtydataCanvasId, dirtyData)
+    $('.progress-bar[data-toggle="tooltip"]').tooltip();
 
-    //Reasoning
+    // //Dirty examples (default value, dirty values, percentages)
+    // var dirtydataCanvasId = "dirtydata" + fd.columns.join("_")
+    // var dirtyData = fd.dirty_data
+    // drawDirtyDataChart(dirtydataCanvasId, dirtyData)
 
 }
 function drawDirtyDataChart(canvasId, dirtyData) {
@@ -278,7 +278,8 @@ function drawDistributionChart(canvasId, distribution) {
     data = {
         datasets: [{
             data: values,
-            backgroundColor: getColors(values.length)
+            backgroundColor: getColors(values.length),
+            borderWidth: 0
         }],
 
         labels: Object.keys(distribution)
@@ -321,4 +322,7 @@ function getColors(num) {
     }
 
     return colors
+}
+function initUsedRows() {
+    $('.progress-bar[data-toggle="tooltip"]').tooltip();
 }
