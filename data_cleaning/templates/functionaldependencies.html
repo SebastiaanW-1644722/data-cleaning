@@ -158,8 +158,11 @@
     </div>
 </div>
 
-<button id="discover_fds" data-table="{{ tablename }}" class="btn btn-primary d-block btn-md mb-3">Start
+<button id="discover_fds" data-table="{{ tablename }}" class="btn btn-primary d-inline btn-md mb-3">Start
     Discovery</button>
+<button id="visualize_results" class="btn btn-dark d-inline btn-md mb-3">Visualize External Results</button>
+
+<input id="results_file_input" type="file" style="display: none;" />
 <div id="fds_loading" class="d-none justify-content-center">
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
@@ -282,7 +285,8 @@
                                         <h4 class="mt-4" data-toggle="collapse"
                                             data-target="#fdusedrows{{'_'.join(result.columns)}}" aria-expanded="true"
                                             aria-controls="fdusedrows{{'_'.join(result.columns)}}"
-                                            id="fdusedrowsheading{{'_'.join(result.columns)}}" style="cursor: pointer;" onclick="initUsedRows();">
+                                            id="fdusedrowsheading{{'_'.join(result.columns)}}" style="cursor: pointer;"
+                                            onclick="initUsedRows();">
                                             Used Rows</h4>
                                         <div class="collapse" id="fdusedrows{{'_'.join(result.columns)}}"
                                             aria-labelledby="fdusedrowsheading{{'_'.join(result.columns)}}">
@@ -300,28 +304,48 @@
                                                         the parameter "Eliminate Small Blocks" is enabled.</li>
                                                 </ul>
                                             </small>
-                                            {% if result.used_rows < result.total_rows %}
-                                            <span class="font-weight-light text-center w-100">Used {{ result.used_rows }} of {{ result.total_rows }} rows.</span>
+                                            {% if result.used_rows < result.total_rows %} <span
+                                                class="font-weight-light text-center w-100">Used {{ result.used_rows }}
+                                                of {{ result.total_rows }} rows.</span>
 
-                                            <div class="progress mt-1">
-                                                <div class="progress-bar" role="progressbar" style="width: {{ (result.used_rows/result.total_rows)*100 }}%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-container="body" data-toggle="tooltip" data-placement="top" title="{{result.used_rows}} used rows">{{result.used_rows}}</div>
-                                                {% if result.n_null_rows > 0 %}
-                                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (result.n_null_rows/result.total_rows)*100 }}%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-container="body" data-toggle="tooltip" data-placement="top" title="{{result.n_null_rows}} NULL-rows">{{result.n_null_rows}}</div>
+                                                <div class="progress mt-1">
+                                                    <div class="progress-bar" role="progressbar"
+                                                        style="width: {{ (result.used_rows/result.total_rows)*100 }}%"
+                                                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                                                        data-container="body" data-toggle="tooltip" data-placement="top"
+                                                        title="{{result.used_rows}} used rows">{{result.used_rows}}
+                                                    </div>
+                                                    {% if result.n_null_rows > 0 %}
+                                                    <div class="progress-bar bg-danger" role="progressbar"
+                                                        style="width: {{ (result.n_null_rows/result.total_rows)*100 }}%"
+                                                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                                                        data-container="body" data-toggle="tooltip" data-placement="top"
+                                                        title="{{result.n_null_rows}} NULL-rows">{{result.n_null_rows}}
+                                                    </div>
+                                                    {% endif %}
+                                                    {% if result.n_small_blocks > 0 %}
+                                                    <div class="progress-bar bg-danger progress-bar-striped"
+                                                        role="progressbar"
+                                                        style="width: {{ (result.n_small_rows/result.total_rows)*100 }}%"
+                                                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                                                        data-container="body" data-toggle="tooltip" data-placement="top"
+                                                        title="{{result.n_small_rows}} small rows">
+                                                        {{result.n_small_rows}}</div>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% else %}
+                                                <span class="font-weight-light mb-1 text-center">Used all {{
+                                                    result.used_rows }} rows.</span>
+
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" style="width: 100%"
+                                                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                                        result.used_rows</div>
+                                                </div>
+
+
                                                 {% endif %}
-                                                {% if result.n_small_blocks > 0 %}
-                                                <div class="progress-bar bg-danger progress-bar-striped" role="progressbar" style="width: {{ (result.n_small_rows/result.total_rows)*100 }}%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-container="body" data-toggle="tooltip" data-placement="top" title="{{result.n_small_rows}} small rows">{{result.n_small_rows}}</div>
-                                                {% endif %}
-                                            </div>
-
-                                            {% else %}
-                                            <span class="font-weight-light mb-1 text-center">Used all {{ result.used_rows }} rows.</span>
-
-                                            <div class="progress">
-                                                <div class="progress-bar" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">result.used_rows</div>
-                                            </div>
-
-                                            
-                                            {% endif %}
                                         </div>
 
 
@@ -380,20 +404,34 @@
                                                 The erroneous examples consist of the 10 largest LHS-blocks with the
                                                 correct
                                                 RHS-value, the
-                                                percentage of erroneous RHS-values and an example of an erroneous RHS-value.
+                                                percentage of erroneous RHS-values and an example of an erroneous
+                                                RHS-value.
                                             </small>
                                             <div id="dirtydata{{'_'.join(result.columns)}}" class="mt-2">
                                                 {% for dirty_element in result.dirty_data %}
                                                 {% if 'erroneous_example' in dirty_element %}
-                                                <small class="font-weight-light">LHS: {{ dirty_element.lhs }} ({{ "%.1f"|format(100 - (dirty_element.default_percentage * 100)) }}% erroneous values)</small>
+                                                <small class="font-weight-light">LHS: {{ dirty_element.lhs }} ({{
+                                                    "%.2f"|format(100 - (dirty_element.default_percentage * 100)) }}%
+                                                    erroneous values)</small>
                                                 {% else %}
                                                 <small class="font-weight-light">LHS: {{ dirty_element.lhs }}</small>
                                                 {% endif %}
 
                                                 <div class="progress mt-1">
-                                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ dirty_element.default_percentage * 100 }}%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-container="body" data-toggle="tooltip" data-placement="top" title="Default value: {{ dirty_element.default }}">{{ "%.1f"|format(dirty_element.default_percentage * 100) }}%</div>
+                                                    <div class="progress-bar bg-success" role="progressbar"
+                                                        style="width: {{ dirty_element.default_percentage * 100 }}%"
+                                                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                                                        data-container="body" data-toggle="tooltip" data-placement="top"
+                                                        title="Default value: {{ dirty_element.default }}">{{
+                                                        "%.2f"|format(dirty_element.default_percentage * 100) }}%</div>
                                                     {% if 'erroneous_example' in dirty_element %}
-                                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ 100 - (dirty_element.default_percentage * 100) }}%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" data-container="body" data-toggle="tooltip" data-placement="top" title="Erroneous example: {{ dirty_element.erroneous_example }}">{{ "%.1f"|format(100 - (dirty_element.default_percentage * 100)) }}%</div>
+                                                    <div class="progress-bar bg-danger" role="progressbar"
+                                                        style="width: {{ 100 - (dirty_element.default_percentage * 100) }}%"
+                                                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                                                        data-container="body" data-toggle="tooltip" data-placement="top"
+                                                        title="Erroneous example: {{ dirty_element.erroneous_example }}">
+                                                        {{ "%.2f"|format(100 - (dirty_element.default_percentage * 100))
+                                                        }}%</div>
                                                     {% endif %}
                                                 </div>
                                                 {% endfor %}

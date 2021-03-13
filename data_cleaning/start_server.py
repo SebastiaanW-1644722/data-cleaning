@@ -6,7 +6,7 @@ app = Flask(__name__)
 import traceback
 import sys
 import getopt
-
+import json
 
 @app.route('/', methods=["GET"])
 def index():
@@ -314,6 +314,17 @@ def discover_fds(tablename):
             return "Table does not exist", 404
     except Exception as e:
         print(e)
+        traceback.print_exc()
+        return str(e), 500
+
+@app.route('/visualize_results', methods=["POST"])
+def visualize_results():
+    try:
+        functional_dependencies = request.get_json(force=True)
+        fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = None)
+
+        return fds_template, 200
+    except Exception as e:
         traceback.print_exc()
         return str(e), 500
 

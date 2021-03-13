@@ -143,6 +143,7 @@ $(document).ready(function () {
         $("#fds_loading").addClass("d-flex")
         $("#discovery_error").addClass("d-none")
         $("#discover_fds").prop('disabled', true)
+        $("#visualize_results").prop('disabled', true)
         //TODO: Get parameters
         var table = $(this).data("table")
         var url = "/discover_fds/"
@@ -152,18 +153,31 @@ $(document).ready(function () {
             url: url,
             success: function (fds_template) {
                 $("#discover_fds").prop('disabled', false)
+                $("#visualize_results").prop('disabled', false)
                 $("#fds_loading").addClass("d-none")
                 $("#fd_results").removeClass("d-none")
                 $("#fds_loading").removeClass("d-flex")
                 $('#fds').html(fds_template);
             },
-            error: function () {
+            error: function (error) {
                 $("#discover_fds").prop('disabled', false)
+                $("#visualize_results").prop('disabled', false)
                 $("#fds_loading").addClass("d-none")
                 $("#discovery_error").removeClass("d-none")
                 $("#fds_loading").removeClass("d-flex")
+                console.log(error)
             }
         });
+    })
+    $('#visualize_results').click(function () {
+        $("#fd_results").addClass("d-none")
+        $("#fds_loading").removeClass("d-none")
+        $("#fds_loading").addClass("d-flex")
+        $("#discovery_error").addClass("d-none")
+        $("#discover_fds").prop('disabled', true)
+        $("#visualize_results").prop('disabled', true)
+        
+        $("#results_file_input").click(); 
     })
     $("#parameters :input").change(function () {
         var tablename = $('#tablename').text()
@@ -177,6 +191,43 @@ $(document).ready(function () {
         });
 
     })
+    $("#results_file_input").change(function (e) {
+        const reader = new FileReader();
+        var file = e.target.files[0];
+        if (file.type != 'application/json') {
+            alert("File should be in JSON format.");
+            return;
+        }
+        reader.onload = function (e) {
+            var fileContents = JSON.parse(e.target.result);
+            var url = "/visualize_results"
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: url,
+                data: JSON.stringify(fileContents),
+                success: function (fds_template) {
+                    $("#discover_fds").prop('disabled', false)
+                    $("#visualize_results").prop('disabled', false)
+                    $("#fds_loading").addClass("d-none")
+                    $("#fd_results").removeClass("d-none")
+                    $("#fds_loading").removeClass("d-flex")
+                    $('#fds').html(fds_template);
+                },
+                error: function (error) {
+                    $("#discover_fds").prop('disabled', false)
+                    $("#visualize_results").prop('disabled', false)
+                    $("#fds_loading").addClass("d-none")
+                    $("#discovery_error").removeClass("d-none")
+                    $("#fds_loading").removeClass("d-flex")
+                    console.log(error)
+                }
+            });
+        };
+        reader.readAsText(file);
+
+    })
+
 })
 function loadMetaData(fd) {
     //Distribution Charts
@@ -189,87 +240,6 @@ function loadMetaData(fd) {
     drawDistributionChart(rhsCanvasId, rhsDistribution)
 
     $('.progress-bar[data-toggle="tooltip"]').tooltip();
-
-    // //Dirty examples (default value, dirty values, percentages)
-    // var dirtydataCanvasId = "dirtydata" + fd.columns.join("_")
-    // var dirtyData = fd.dirty_data
-    // drawDirtyDataChart(dirtydataCanvasId, dirtyData)
-
-}
-function drawDirtyDataChart(canvasId, dirtyData) {
-    var correct_pcts = []
-    var erroneous_pcts = []
-    var lhss = []
-    var defaults = []
-    var erroneous = []
-
-    dirtyData.forEach(dirtyElement => {
-        correct_pcts.push(dirtyElement.default_percentage * 100)
-        erroneous_pcts.push(100 - dirtyElement.default_percentage * 100)
-        lhss.push(dirtyElement.lhs)
-        if ("erroneous_example" in dirtyElement) {
-            erroneous.push(dirtyElement.erroneous_example)
-        } else {
-            erroneous.push(0)
-        }
-        defaults.push(dirtyData.default)
-    });
-
-    var data = {
-        labels: lhss,
-        datasets: [
-            {
-                barPercentage: 0.5,
-                barThickness: 6,
-                maxBarThickness: 8,
-                backgroundColor: "green",
-                minBarLength: 2,
-                data: correct_pcts,
-                stack: "Correct",
-                label: "Correct"
-            },
-            {
-                barPercentage: 0.5,
-                barThickness: 6,
-                maxBarThickness: 8,
-                backgroundColor: "red",
-                minBarLength: 2,
-                data: erroneous_pcts,
-                stack: "Erroneous",
-                label: "Erroneous"
-            }
-        ]
-    };
-
-    var options = {
-        scales: {
-            xAxes: [{
-                stacked: true
-            }],
-            yAxes: [{
-                stacked: true
-            }]
-        }
-        // tooltips: {
-        //     callbacks: {
-        //         footer: function(tooltipItem, chart) {
-
-        //             tooltipItems.forEach(function(tooltipItem) {
-        //                 sum += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-        //             });
-        //             return 'Expected: ' + sum;
-        //         }
-        //     }
-        // }
-    }
-
-    var ctx = document.getElementById(canvasId).getContext('2d');
-    var distributionChart = new Chart(ctx, {
-        type: 'horizontalBar',
-        data: data,
-        options: options
-    });
-
 }
 function drawDistributionChart(canvasId, distribution) {
 
