@@ -125,7 +125,7 @@ $(document).ready(function () {
             });
         })
     })
-    $(".functional-dependency").change(function () {
+    $("body").on("change",".functional-dependency", function() {
         var tablename = $('#tablename').text()
         var checked_value = $(this).is(':checked')
         var url = "/setfunctionaldependency/"
@@ -137,7 +137,7 @@ $(document).ready(function () {
             data: JSON.stringify({ id: $(this).val(), checked: checked_value })
         });
     })
-    $('#discover_fds').click(function () {
+    $("body").on("click", "#discover_fds", function() {
         $("#fd_results").addClass("d-none")
         $("#fds_loading").removeClass("d-none")
         $("#fds_loading").addClass("d-flex")
@@ -169,17 +169,17 @@ $(document).ready(function () {
             }
         });
     })
-    $('#visualize_results').click(function () {
+    $("body").on("click", "#visualize_results", function() {
         $("#fd_results").addClass("d-none")
         $("#fds_loading").removeClass("d-none")
         $("#fds_loading").addClass("d-flex")
         $("#discovery_error").addClass("d-none")
         $("#discover_fds").prop('disabled', true)
         $("#visualize_results").prop('disabled', true)
-        
-        $("#results_file_input").click(); 
+
+        $("#results_file_input").click();
     })
-    $("#parameters :input").change(function () {
+    $("body").on("change","#parameters :input", function() {
         var tablename = $('#tablename').text()
         var url = "/setdiscoveryparameters/"
         url = url.concat(tablename)
@@ -187,11 +187,23 @@ $(document).ready(function () {
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: url,
-            data: JSON.stringify({ sample: $("#sample").is(':checked'), sample_size: parseFloat($("#samplesize").val()), threshold_table: $("#thresholdtable").is(':checked'), fd_threshold: parseFloat($("#fdthreshold").val()), workers: parseInt($("#workers").val()), bin_columns: $("#bincolumns").is(':checked'), include_nulls: $("#includenulls").is(':checked'), arity: parseInt($("#arity").val()) })
+            data: JSON.stringify({
+                sample: $("#sample").is(':checked'),
+                sample_size: parseFloat($("#samplesize").val()),
+                threshold_table: $("#thresholdtable").is(':checked'),
+                fd_threshold: parseFloat($("#fdthreshold").val()),
+                workers: parseInt($("#workers").val()),
+                bin_columns: $("#bincolumns").is(':checked'),
+                include_nulls: $("#includenulls").is(':checked'),
+                arity: parseInt($("#arity").val()),
+                conf_dominant_y_pct: parseFloat($("#confdominant").val()),
+                conf_large_domain: parseInt($("#confdomain").val()),
+                conf_low_pct_rows: parseFloat($("#confrows").val())
+            })
         });
 
     })
-    $("#results_file_input").change(function (e) {
+    $("body").on("change","#results_file_input", function(e) {
         const reader = new FileReader();
         var file = e.target.files[0];
         if (file.type != 'application/json') {
@@ -229,70 +241,3 @@ $(document).ready(function () {
     })
 
 })
-function loadMetaData(fd) {
-    //Distribution Charts
-    var lhsCanvasId = "lhsdistribution" + fd.columns.join("_")
-    var lhsDistribution = fd.most_frequent_x
-    drawDistributionChart(lhsCanvasId, lhsDistribution)
-
-    var rhsCanvasId = "rhsdistribution" + fd.columns.join("_")
-    var rhsDistribution = fd.most_frequent_y
-    drawDistributionChart(rhsCanvasId, rhsDistribution)
-
-    $('.progress-bar[data-toggle="tooltip"]').tooltip();
-}
-function drawDistributionChart(canvasId, distribution) {
-
-    var values = Object.values(distribution)
-
-    data = {
-        datasets: [{
-            data: values,
-            backgroundColor: getColors(values.length),
-            borderWidth: 0
-        }],
-
-        labels: Object.keys(distribution)
-    };
-
-    var display_legend = values.length <= 20
-
-    options = {
-        responsive: true,
-        legend: {
-            position: 'left',
-            display: display_legend,
-        },
-        title: {
-            display: false,
-        },
-        animation: {
-            animateScale: false,
-            animateRotate: false
-        }
-    }
-
-    var ctx = document.getElementById(canvasId).getContext('2d');
-    var distributionChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: data,
-        options: options
-    });
-}
-function getColors(num) {
-    var possible_colors = ['#808080', '#000000', '#FF0000', '#FFFF00', '#00FF00', '#008000', '#00FFFF', '#0000FF', '#000080', '#FF00FF', '#800080', '#00ffff', '#f0ffff', '#f5f5dc', '#000000', '#0000ff', '#a52a2a', '#00ffff', '#00008b', '#008b8b', '#a9a9a9', '#006400', '#bdb76b', '#8b008b', '#556b2f', '#ff8c00', '#9932cc', '#8b0000', '#e9967a', '#9400d3', '#ff00ff', '#ffd700', '#008000', '#4b0082', '#f0e68c', '#add8e6', '#e0ffff', '#90ee90', '#d3d3d3', '#ffb6c1', '#ffffe0', '#00ff00', '#ff00ff', '#800000', '#000080', '#808000', '#ffa500', '#ffc0cb', '#800080', '#800080', '#ff0000', '#c0c0c0', '#ffffff', '#ffff00']
-    // var possible_colors = ["red", "blue", "yellow", "green", "black", "gray", "purple", "navy", "orange", "brown", "coral", "olive", "turquoise", "darkred", "tan", "thistle" ]
-    // var sliced_colors = colors.slice(0,num)
-    // return sliced_colors
-    var colors = [];
-    while (colors.length < num) {
-        var n_colors_to_add = Math.min(possible_colors.length, num - colors.length)
-        var colors_to_add = possible_colors.slice(0, n_colors_to_add)
-        colors = colors.concat(colors_to_add)
-    }
-
-    return colors
-}
-function initUsedRows() {
-    $('.progress-bar[data-toggle="tooltip"]').tooltip();
-}

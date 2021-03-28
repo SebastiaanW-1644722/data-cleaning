@@ -27,6 +27,9 @@ def read_all_tables(path_to_tables_file):
     with open(path_to_tables_file) as f:
         for path in f:
             try:
+                if path.strip().startswith("#"):
+                    continue
+
                 if path.startswith("id:"):
                     file_id = path.replace("id:", "").strip(" ")
                     if not drive:
@@ -64,7 +67,7 @@ def _read_csv_table(path):
     flag_columns = ["FOREIGN_KEY_VIOLATION", "SMALLER_THAN_VIOLATION", "NULL_FLAG", "FUTURE_DATE_FLAG",
                     "FOREIGN_KEY_VIOLATION_INFO", "SMALLER_THAN_VIOLATION_INFO", "NULL_FLAG_INFO",
                     "FUTURE_DATE_FLAG_INFO", "DUPLICATE_FLAG_MESSAGE", "OUTLIER_FLAG_INFO"]
-    df = pd.read_csv(path, usecols=lambda x: x not in flag_columns)
+    df = pd.read_csv(path, usecols=lambda x: x not in flag_columns, sep=None)
     warnings.simplefilter("default")
 
     return df

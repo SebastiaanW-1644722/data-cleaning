@@ -59,100 +59,152 @@
     <div id="parametersCollapse" class="collapse" aria-labelledby="parametersHeading">
         <div class="card-body">
             <form id="parameters">
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="thresholdtable" {{'checked' if
-                            fd_parameters.threshold_table }}>
-                        <label class="form-check-label" for="thresholdtable">
-                            Eliminate Small Blocks
-                        </label>
-                        <small id="thresholdtablehelp" class="form-text text-muted">
-                            If this box is checked, the tool will automatically eliminate small blocks. E.g. if the LHS
-                            is country and Belgium occurs only once, it will not be used in the calculation.
+                <div class="mb-3" id="discoveryparameters">
+                    <h5 class="mb-3">Discovery Parameters</h5>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="thresholdtable" {{'checked' if
+                                fd_parameters.threshold_table }}>
+                            <label class="form-check-label" for="thresholdtable">
+                                Eliminate Small Blocks
+                            </label>
+                            <small id="thresholdtablehelp" class="form-text text-muted">
+                                If this box is checked, the tool will automatically eliminate small blocks. E.g. if the
+                                LHS
+                                is country and Belgium occurs only once, it will not be used in the calculation.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="includenulls" {{'checked' if
+                                fd_parameters.include_nulls }}>
+                            <label class="form-check-label" for="includenulls">
+                                Include NULL-values
+                            </label>
+                            <small id="thresholdtablehelp" class="form-text text-muted">
+                                If checked, NULLs will also be used in the calculation. If not, rows with NULLs will be
+                                skipped.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="bincolumns" {{'checked' if
+                                fd_parameters.bin_columns }}>
+                            <label class="form-check-label" for="bin">
+                                Bin Columns (date and decimal)
+                            </label>
+                            <small id="binhelp" class="form-text text-muted">
+                                If checked, dates and decimals will be binned into intervals. If not, date or decimal
+                                columns will be skipped.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="sample" {{'checked' if
+                                fd_parameters.sample }}>
+                            <label class="form-check-label" for="sample">
+                                Sample
+                            </label>
+                            <small id="samplehelp" class="form-text text-muted">
+                                If this box is checked, the tool will use a sample of the dataset.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="samplesize">Sample Size</label>
+                        <input type="number" min="0" max="1" step="0.01" class="form-control" id="samplesize"
+                            value="{{ fd_parameters.sample_size }}">
+                        <small id="samplesizehelp" class="form-text text-muted">
+                            The sample size (between 0.01 and 1). E.g. for a value of 0.01, the tool will use 1% of the
+                            dataset. Use zero to let the tool decide on the sample size.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fdthreshold">FD Score Threshold</label>
+                        <input type="number" min="0" max="1" step="0.01" class="form-control" id="fdthreshold"
+                            value="{{ fd_parameters.fd_threshold }}">
+                        <small id="fdthresholdhelp" class="form-text text-muted">
+                            A LHS &rarr; RHS will only be considered an FD if the score is above this value. We
+                            recommend
+                            not to set this to lower than 0.9.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workers">Workers</label>
+                        <input type="number" min="1" step="1" class="form-control" id="workers"
+                            value="{{ fd_parameters.workers }}">
+                        <small id="workershelp" class="form-text text-muted">
+                            The amount of parallel processes that will be discovering FDs. The maximum is the number of
+                            cores on your machine. If higher, the number of cores on your machine will be used.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="arity">Arity</label>
+                        <input type="number" min="1" max="5" step="1" class="form-control" id="arity"
+                            value="{{ fd_parameters.arity }}">
+                        <small id="arityhelp" class="form-text text-muted">
+                            The number of elements in the LHS. E.g. CITY &rarr; COUNTRY has arity 1. The higher the
+                            arity,
+                            the more possible FDs and the higher the complexity.
+                        </small>
+                    </div>
+
+                </div>
+
+                <div id="confidenceparameters">
+                    <h5>Confidence Thresholds</h5>
+                    <small id="confhelp" class="form-text text-muted mb-3">
+                        Threshold parameters used in the calculation of the confidence score.
+                    </small>
+
+                    <div class="form-group">
+                        <label for="confdominant">Dominant Y Percentage</label>
+                        <input type="number" min="0.0" step="0.01" max="1.0" class="form-control" id="confdominant"
+                            value="{{ fd_parameters.conf_dominant_y_pct }}">
+                        <small id="confdominanthelp" class="form-text text-muted">
+                            If the occurrence of the most common value in the RHS-domain is above this threshold, the
+                            algorithm will classify this as a predominant value, which is a confounding factor.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confrows">Minimal Row Percentage</label>
+                        <input type="number" min="0.0" step="0.01" max="1.0" class="form-control" id="confrows"
+                            value="{{ fd_parameters.conf_low_pct_rows }}">
+                        <small id="confrowshelp" class="form-text text-muted">
+                            If the fraction of the used rows to calculate the FD (with regard to the rows in the table)
+                            is
+                            below this threshold, the algorithm will classify this as an unsufficient amount of rows,
+                            which
+                            is a confounding factor.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confdomain">Large Domain</label>
+                        <input type="number" min="10" step="1" class="form-control" id="confdomain"
+                            value="{{ fd_parameters.conf_large_domain }}">
+                        <small id="confdomainhelp" class="form-text text-muted">
+                            If the number of unique LHS-values is above this threshold, the algorithm will classify this
+                            as
+                            a 'large' domain, which is a confounding factor.
+                        </small>
                         </small>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="includenulls" {{'checked' if
-                            fd_parameters.include_nulls }}>
-                        <label class="form-check-label" for="includenulls">
-                            Include NULL-values
-                        </label>
-                        <small id="thresholdtablehelp" class="form-text text-muted">
-                            If checked, NULLs will also be used in the calculation. If not, rows with NULLs will be
-                            skipped.
-                        </small>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="bincolumns" {{'checked' if
-                            fd_parameters.bin_columns }}>
-                        <label class="form-check-label" for="bin">
-                            Bin Columns (date and decimal)
-                        </label>
-                        <small id="binhelp" class="form-text text-muted">
-                            If checked, dates and decimals will be binned into intervals. If not, date or decimal
-                            columns will be skipped.
-                        </small>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="sample" {{'checked' if
-                            fd_parameters.sample }}>
-                        <label class="form-check-label" for="sample">
-                            Sample
-                        </label>
-                        <small id="samplehelp" class="form-text text-muted">
-                            If this box is checked, the tool will use a sample of the dataset.
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="samplesize">Sample Size</label>
-                    <input type="number" min="0" max="1" step="0.01" class="form-control" id="samplesize"
-                        value="{{ fd_parameters.sample_size }}">
-                    <small id="samplesizehelp" class="form-text text-muted">
-                        The sample size (between 0.01 and 1). E.g. for a value of 0.01, the tool will use 1% of the
-                        dataset. Use zero to let the tool decide on the sample size.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label for="fdthreshold">FD Score Threshold</label>
-                    <input type="number" min="0" max="1" step="0.01" class="form-control" id="fdthreshold"
-                        value="{{ fd_parameters.fd_threshold }}">
-                    <small id="fdthresholdhelp" class="form-text text-muted">
-                        A LHS &rarr; RHS will only be considered an FD if the score is above this value. We recommend
-                        not to set this to lower than 0.9.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label for="workers">Workers</label>
-                    <input type="number" min="1" step="1" class="form-control" id="workers"
-                        value="{{ fd_parameters.workers }}">
-                    <small id="workershelp" class="form-text text-muted">
-                        The amount of parallel processes that will be discovering FDs. The maximum is the number of
-                        cores on your machine. If higher, the number of cores on your machine will be used.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label for="arity">Arity</label>
-                    <input type="number" min="1" max="5" step="1" class="form-control" id="arity"
-                        value="{{ fd_parameters.arity }}">
-                    <small id="arityhelp" class="form-text text-muted">
-                        The number of elements in the LHS. E.g. CITY &rarr; COUNTRY has arity 1. The higher the arity,
-                        the more possible FDs and the higher the complexity.
-                    </small>
-                </div>
             </form>
         </div>
     </div>
@@ -161,6 +213,16 @@
 <button id="discover_fds" data-table="{{ tablename }}" class="btn btn-primary d-inline btn-md mb-3">Start
     Discovery</button>
 <button id="visualize_results" class="btn btn-dark d-inline btn-md mb-3">Visualize External Results</button>
+<a class="btn btn-info float-right {{ 'disabled' if functional_dependencies|length == 0 }}"  onclick="this.href='data:text/html;charset=UTF-8,'+
+    encodeURIComponent(document.getElementsByTagName('head')[0].outerHTML)+
+    '<div class=&quot;w-50 mx-auto&quot;>'+
+    encodeURIComponent(document.getElementById('fd_results').innerHTML)+
+    '<script src=&quot;https:/\/ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js&quot;></script>'+
+    '<script src=&quot;https:/\/cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js&quot;></script>'+
+    '<script src=&quot;https:/\/cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js&quot;></script>'+
+    '<script src=&quot;https:/\/cdn.jsdelivr.net/npm/chart.js@2.8.0&quot;></script>'+
+    '</div>'"
+    href="#" download>Download Report</a>
 
 <input id="results_file_input" type="file" style="display: none;" />
 <div id="fds_loading" class="d-none justify-content-center">
@@ -170,7 +232,7 @@
 </div>
 
 <div id="fd_results" class="mb-4">
-    {% if functional_dependencies.items()|length > 0 %}
+    {% if functional_dependencies|length > 0 %}
     <!-- <h5>Found ... functional dependencies</h5> -->
     <button id="select-all" type="button" class="d-none btn btn-outline-secondary btn-sm">Select all</button>
     <button id="unselect-all" type="button" class="d-none btn btn-outline-secondary btn-sm">Deselect all</button>
@@ -190,7 +252,8 @@
 
     <div id="RHSAccordion" class="mt-3">
 
-        {% for rhs, values in functional_dependencies.items() %}
+        {% for rhs_dict in functional_dependencies %}
+        {% for rhs, values in rhs_dict.items() %}
         <div class="card">
             <div class="card-header" id="RHSHeading{{ rhs }}">
                 <h5 class="mb-0">
@@ -273,6 +336,11 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
+                                                        <th scope="row">Reliable Fraction of Information</th>
+                                                        <td>{{ "%.3f"|format(result.scores.reliable_fraction_of_information) }}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
                                                         <th scope="row">g3</th>
                                                         <td>{{ "%.3f"|format(result.scores.g3) }}</td>
                                                     </tr>
@@ -341,7 +409,8 @@
                                                 <div class="progress">
                                                     <div class="progress-bar" role="progressbar" style="width: 100%"
                                                         aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                                                        result.used_rows</div>
+                                                        {{
+                                                            result.used_rows }}</div>
                                                 </div>
 
 
@@ -375,19 +444,19 @@
 
                                             <h5 class="mt-3">LHS: {{" , ".join(result.columns[:-1])}}</h5>
                                             <p><b>Unique values: </b>{{ result.most_frequent_x|length }}</p>
-                                            {% if result.most_frequent_x|length > 20 %}
-                                            <small class="text-muted">Too many values to show a legend.</small>
-                                            {% endif %}
+                                            <!-- {% if result.most_frequent_x|length > 20 %} -->
+                                            <small class="text-muted">Hover parts to see values.</small>
+                                            <!-- {% endif %} -->
 
-                                            <canvas id="lhsdistribution{{'_'.join(result.columns)}}"></canvas>
+                                            <div><canvas id="lhsdistribution{{'_'.join(result.columns)}}"></canvas></div>
 
                                             <h5>RHS: {{result.columns[-1]}}</h5>
                                             <p><b>Unique values: </b>{{ result.most_frequent_y|length }}</p>
-                                            {% if result.most_frequent_y|length > 20 %}
-                                            <small class="text-muted">Too many values to show a legend.</small>
-                                            {% endif %}
+                                            <!-- {% if result.most_frequent_x|length > 20 %} -->
+                                            <small class="text-muted">Hover parts to see values.</small>
+                                            <!-- {% endif %} -->
 
-                                            <canvas id="rhsdistribution{{'_'.join(result.columns)}}"></canvas>
+                                            <div><canvas id="rhsdistribution{{'_'.join(result.columns)}}"></canvas></div>
                                         </div>
 
                                     </div>
@@ -455,9 +524,90 @@
             </div>
         </div>
         {% endfor %}
+        {% endfor %}
 
     </div>
 
+    <script>
+        function loadMetaData(fd) {
+            //Distribution Charts
+            var lhsCanvasId = "lhsdistribution" + fd.columns.join("_")
+            var lhsDistribution = fd.most_frequent_x
+            drawDistributionChart(lhsCanvasId, lhsDistribution)
+
+            var rhsCanvasId = "rhsdistribution" + fd.columns.join("_")
+            var rhsDistribution = fd.most_frequent_y
+            drawDistributionChart(rhsCanvasId, rhsDistribution)
+
+            $('.progress-bar[data-toggle="tooltip"]').tooltip();
+        }
+        function drawDistributionChart(canvasId, distribution) {
+
+            var values = Object.values(distribution)
+
+            data = {
+                datasets: [{
+                    data: values,
+                    backgroundColor: getColors(values.length),
+                    borderWidth: 0
+                }],
+
+                labels: Object.keys(distribution)
+            };
+
+            var display_legend = values.length <= 20
+
+            options = {
+                reponsive: true,
+                legend: {
+                    position: 'left',
+                    display: false,
+                },
+                title: {
+                    display: false,
+                },
+                animation: {
+                    animateScale: false,
+                    animateRotate: false
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return data['datasets'][0]['data'][tooltipItem['index']].toFixed(3) + "%";
+                        },
+                        title: function(tooltipItem, data) {
+                            return data['labels'][tooltipItem[0]['index']];
+                        }
+                    }
+                }
+            }
+
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            var distributionChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: options
+            });
+        }
+        function getColors(num) {
+            var possible_colors = ['#808080', '#000000', '#FF0000', '#FFFF00', '#00FF00', '#008000', '#00FFFF', '#0000FF', '#000080', '#FF00FF', '#800080', '#00ffff', '#f0ffff', '#f5f5dc', '#000000', '#0000ff', '#a52a2a', '#00ffff', '#00008b', '#008b8b', '#a9a9a9', '#006400', '#bdb76b', '#8b008b', '#556b2f', '#ff8c00', '#9932cc', '#8b0000', '#e9967a', '#9400d3', '#ff00ff', '#ffd700', '#008000', '#4b0082', '#f0e68c', '#add8e6', '#e0ffff', '#90ee90', '#d3d3d3', '#ffb6c1', '#ffffe0', '#00ff00', '#ff00ff', '#800000', '#000080', '#808000', '#ffa500', '#ffc0cb', '#800080', '#800080', '#ff0000', '#c0c0c0', '#ffffff', '#ffff00']
+            // var possible_colors = ["red", "blue", "yellow", "green", "black", "gray", "purple", "navy", "orange", "brown", "coral", "olive", "turquoise", "darkred", "tan", "thistle" ]
+            // var sliced_colors = colors.slice(0,num)
+            // return sliced_colors
+            var colors = [];
+            while (colors.length < num) {
+                var n_colors_to_add = Math.min(possible_colors.length, num - colors.length)
+                var colors_to_add = possible_colors.slice(0, n_colors_to_add)
+                colors = colors.concat(colors_to_add)
+            }
+
+            return colors
+        }
+        function initUsedRows() {
+            $('.progress-bar[data-toggle="tooltip"]').tooltip();
+        }
+    </script>
+    
 
 </div>
 
