@@ -197,7 +197,7 @@ $(document).ready(function () {
                 include_nulls: $("#includenulls").is(':checked'),
                 arity: parseInt($("#arity").val()),
                 conf_dominant_y_pct: parseFloat($("#confdominant").val()),
-                conf_large_domain: parseInt($("#confdomain").val()),
+                conf_rfi_threshold: parseFloat($("#confrfi").val()),
                 conf_low_pct_rows: parseFloat($("#confrows").val())
             })
         });

@@ -15,7 +15,7 @@ class FunctionalDependencyDiscovery:
         self.include_nulls = False
         self.arity = 1
         self.conf_low_pct_rows = 0.01
-        self.conf_large_domain = 10
+        self.conf_rfi_threshold = 0.75
         self.conf_dominant_y_pct = 0.9
 
     def calc_fds(self):
@@ -24,7 +24,7 @@ class FunctionalDependencyDiscovery:
             self.name: self.data_frame
         }
         
-        results = discover_all_fds(data_frames, threshold_table=self.threshold_table, arity=self.arity, include_nulls=self.include_nulls, fd_threshold=self.fd_threshold, bin_columns = self.bin_columns, workers=self.workers, sample=self.sample, sample_size=self.sample_size, conf_dominant_y_pct=self.conf_dominant_y_pct, conf_large_domain=self.conf_large_domain, conf_low_pct_rows=self.conf_low_pct_rows)
+        results = discover_all_fds(data_frames, threshold_table=self.threshold_table, arity=self.arity, include_nulls=self.include_nulls, fd_threshold=self.fd_threshold, bin_columns = self.bin_columns, workers=self.workers, sample=self.sample, sample_size=self.sample_size, conf_dominant_y_pct=self.conf_dominant_y_pct, conf_rfi_threshold=self.conf_rfi_threshold, conf_low_pct_rows=self.conf_low_pct_rows)
     
         self.results = results[self.name].results
 
@@ -40,7 +40,7 @@ class FunctionalDependencyDiscovery:
         self.include_nulls = json["include_nulls"]
         self.arity = json["arity"]
         self.conf_dominant_y_pct = json["conf_dominant_y_pct"]
-        self.conf_large_domain = json["conf_large_domain"]
+        self.conf_rfi_threshold = json["conf_rfi_threshold"]
         self.conf_low_pct_rows = json["conf_low_pct_rows"]
 
     def get_parameters(self):
@@ -55,7 +55,7 @@ class FunctionalDependencyDiscovery:
             "include_nulls": self.include_nulls,
             "arity": self.arity,
             "conf_low_pct_rows": self.conf_low_pct_rows,
-            "conf_large_domain": self.conf_large_domain,
+            "conf_rfi_threshold": self.conf_rfi_threshold,
             "conf_dominant_y_pct": self.conf_dominant_y_pct
 
         }
