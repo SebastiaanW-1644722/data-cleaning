@@ -1,22 +1,23 @@
 from fd_discovery.fd_discovery import discover_all_fds
+from fd_discovery.utils import Parameters
 
 class FunctionalDependencyDiscovery:
     def __init__(self, name, data_frame):
         self.name = name
         self.data_frame = data_frame
         self.results = {}
-        self.sample = False
-        self.sample_size = 0.5
-        self.threshold_table = True
-        self.fd_threshold = 0.90
-        self.workers = 2
-        self.bin_columns = False
-        self.only_fds = True
-        self.include_nulls = False
-        self.arity = 1
-        self.conf_low_pct_rows = 0.01
-        self.conf_rfi_threshold = 0.75
-        self.conf_dominant_y_pct = 0.9
+        self.sample = Parameters().sample
+        self.sample_size = Parameters().sample_size
+        self.threshold_table = Parameters().threshold_table
+        self.fd_threshold = Parameters().fd_threshold
+        self.workers = Parameters().workers
+        self.bin_columns = Parameters().bin_columns
+        self.only_fds = Parameters().only_fds
+        self.include_nulls = Parameters().include_nulls
+        self.arity = Parameters().arity
+        self.conf_low_pct_rows = Parameters().conf_low_pct_rows
+        self.conf_rfi_threshold = Parameters().conf_rfi_threshold
+        self.conf_dominant_y_pct = Parameters().conf_dominant_y_pct
 
     def calc_fds(self):
         
@@ -29,6 +30,33 @@ class FunctionalDependencyDiscovery:
         self.results = results[self.name].results
 
         return self.results
+
+    def set_results(self, json):
+        self.results = json
+
+        return self.results
+    
+    def get_results(self, threshold=None):
+        if not threshold:
+            return self.results
+
+        threshold = float(threshold)
+
+        adjusted_results = []
+
+        for rhs_dict in self.results:
+            for rhs, dict in rhs_dict.items():
+                    new_fds = [fd for fd in dict["fds"] if fd["reasoning"]["confidence"] >= threshold]
+                    average_confidence = sum(fd["reasoning"]["confidence"] for fd in dict["fds"])/len(dict["fds"])
+                    if len(new_fds) > 0:
+                        adjusted_results.append({
+                            rhs: {
+                                "fds": new_fds,
+                                "average_confidence": average_confidence
+                            }
+                        })
+
+        return adjusted_results
 
     def set_parameters(self, json):
         self.sample = json["sample"]
@@ -57,7 +85,6 @@ class FunctionalDependencyDiscovery:
             "conf_low_pct_rows": self.conf_low_pct_rows,
             "conf_rfi_threshold": self.conf_rfi_threshold,
             "conf_dominant_y_pct": self.conf_dominant_y_pct
-
         }
 
         return par

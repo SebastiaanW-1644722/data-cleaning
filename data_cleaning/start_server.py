@@ -6,7 +6,6 @@ app = Flask(__name__)
 import traceback
 import sys
 import getopt
-import json
 
 @app.route('/', methods=["GET"])
 def index():
@@ -68,6 +67,7 @@ def rules(tablename):
         foreignkeys = [fk for fk in foreignkeys if fk['from_table'] == tablename]
         clusters = {col: clustering.get_clusters_as_dictionaries() for col, clustering in table.clusters.items()}
         functional_dependencies = table.rules.functional_dependency_discovery.results
+        num_fds = sum(len(list(rhs.values())[0]["fds"]) for rhs in functional_dependencies)
         return render_template("rules.html", tablenames=tablenames, tablename=tablename,
                                columns=table.columns, clustercolumns=table.rules.cluster_columns,
                                nonclustercolumns=table.rules.non_cluster_columns,
@@ -75,7 +75,7 @@ def rules(tablename):
                                selected_dc=table.rules.dc_ids_selected,
                                foreign_keys=foreignkeys, uniqueconstraints=table.rules.unique_constraints,
                                clusters=clusters, filter_percentage=100,
-                               functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters()), 200
+                               functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters(), num_fds=num_fds, strictness=0), 200
     else:
         return "Error", 404
 
@@ -307,7 +307,8 @@ def discover_fds(tablename):
         if tablename in tables:
             table = tables[tablename]
             functional_dependencies = table.rules.functional_dependency_discovery.calc_fds()
-            fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters())
+            num_fds = sum(len(list(rhs.values())[0]["fds"]) for rhs in functional_dependencies)
+            fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters(), num_fds=num_fds, strictness = 0)
 
             return fds_template, 200
         else:
@@ -317,16 +318,39 @@ def discover_fds(tablename):
         traceback.print_exc()
         return str(e), 500
 
-@app.route('/visualize_results', methods=["POST"])
-def visualize_results():
+@app.route('/visualize_results/<string:tablename>', methods=["POST"])
+def visualize_results(tablename):
     try:
-        functional_dependencies = request.get_json(force=True)
-        fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = None)
+        if tablename in tables:
+            table = tables[tablename]
+            functional_dependencies = table.rules.functional_dependency_discovery.set_results(request.get_json(force=True))
+            num_fds = sum(len(list(rhs.values())[0]["fds"]) for rhs in functional_dependencies)
+            fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters(), num_fds=num_fds, strictness = 0)
 
-        return fds_template, 200
+            return fds_template, 200
+        else:
+            return "Table does not exist", 404 
     except Exception as e:
         traceback.print_exc()
         return str(e), 500
+
+@app.route('/adjust_strictness/<string:tablename>', methods=["GET"])
+def adjust_strictness(tablename):
+    try:
+        threshold = request.args.get('threshold')
+        if tablename in tables:
+            table = tables[tablename]
+            functional_dependencies = table.rules.functional_dependency_discovery.get_results(threshold=threshold)
+            num_fds = sum(len(list(rhs.values())[0]["fds"]) for rhs in functional_dependencies)
+            fds_template = render_template('functionaldependencies.html', functional_dependencies=functional_dependencies, fd_parameters = table.rules.functional_dependency_discovery.get_parameters(), num_fds=num_fds, strictness = threshold)
+
+            return fds_template, 200
+        else:
+            return "Table does not exist", 404 
+    except Exception as e:
+        traceback.print_exc()
+        return str(e), 500
+
 
 @app.route('/setdiscoveryparameters/<string:tablename>', methods=["POST"])
 def setdiscoveryparameters(tablename):

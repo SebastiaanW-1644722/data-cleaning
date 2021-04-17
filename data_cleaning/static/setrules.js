@@ -180,9 +180,9 @@ $(document).ready(function () {
         $("#results_file_input").click();
     })
     $("body").on("change","#parameters :input", function() {
-        var tablename = $('#tablename').text()
+        var table = $('#tablename').text()
         var url = "/setdiscoveryparameters/"
-        url = url.concat(tablename)
+        url = url.concat(table)
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",
@@ -212,7 +212,9 @@ $(document).ready(function () {
         }
         reader.onload = function (e) {
             var fileContents = JSON.parse(e.target.result);
-            var url = "/visualize_results"
+            var table = $('#tablename').text()
+            var url = "/visualize_results/"
+            url = url.concat(table)
             $.ajax({
                 type: "POST",
                 contentType: "application/json",
@@ -239,5 +241,32 @@ $(document).ready(function () {
         reader.readAsText(file);
 
     })
+    $("body").on("input","#strictness_range", function(e) {
+        var threshold = e.target.value;
+        document.getElementById("strictness_value").innerHTML = threshold;
+    })
+    $("body").on("mouseup","#strictness_range", function(e) {
+        var threshold = e.target.value;
+        var table = $('#tablename').text()
+        var url = "/adjust_strictness/"
+        url = url.concat(table)
+        url = url.concat("?threshold=" + threshold)
 
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function (fds_template) {
+                $('#fds').html(fds_template);
+            },
+            error: function (error) {
+                $("#discover_fds").prop('disabled', false)
+                $("#visualize_results").prop('disabled', false)
+                $("#discovery_error").removeClass("d-none")
+                $("#fd_results").addClass("d-none")
+                $("#fd_results").removeClass("d-flex")
+                console.log(error)
+            }
+        });
+        
+    })
 })
