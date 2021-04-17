@@ -1,4 +1,5 @@
 from fd_discovery.fd_discovery import discover_all_fds
+from fd_discovery.process_results import sort_results
 from fd_discovery.utils import Parameters
 
 class FunctionalDependencyDiscovery:
@@ -56,7 +57,7 @@ class FunctionalDependencyDiscovery:
                             }
                         })
 
-        return adjusted_results
+        return sort_results(adjusted_results)
 
     def set_parameters(self, json):
         self.sample = json["sample"]

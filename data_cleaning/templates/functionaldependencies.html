@@ -286,7 +286,7 @@
                             <div class="d-flex align-items-center justify-content-center"
                                 style='cursor: pointer; background-color: hsl(112, 45%, {{ 40 + (((5 - result.reasoning.confidence)/5)*(100-40)) }}%);'
                                 id="fdheading{{'_'.join(result.columns)}}">
-                                <table class="table table-borderless m-0" style="width: 60%" data-toggle="collapse"
+                                <table class="table table-borderless m-0 text-break" style="width: 60%" data-toggle="collapse"
                                     data-target="#fdcollapse{{'_'.join(result.columns)}}" aria-expanded="true"
                                     aria-controls="fdcollapse{{'_'.join(result.columns)}}"
                                     onclick='loadMetaData({{result|tojson}})'>
@@ -325,12 +325,13 @@
                                             Scores</h4>
                                         <div class="collapse" id="fdscores{{'_'.join(result.columns)}}"
                                             aria-labelledby="fdscoresheading{{'_'.join(result.columns)}}">
-                                            <small class="text-muted ">
+                                            <small class="text-muted d-block">
                                                 The discovery algorithm uses 2 methods to calculate the degree to which
                                                 the
                                                 FD holds in the dataset. There is more information at the top of this
                                                 page, but it is fine if you don't understand the meaning of these.
                                             </small>
+                                            <h5 class="mt-3">Measurement Methods</h5>
                                             <table class="table table-sm table-bordered w-50 mt-3">
                                                 <tbody>
                                                     <tr>
@@ -352,6 +353,10 @@
                                                     </tr>
                                                 </tbody>
                                             </table>
+
+                                            <h5>Confidence</h5>
+                                            <span class="">{{ "%.2f"|format(result.reasoning.confidence) }} / <b>5</b></span>
+                            
                                         </div>
                                     </div>
 
