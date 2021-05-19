@@ -19,6 +19,8 @@ class FunctionalDependencyDiscovery:
         self.conf_low_pct_rows = Parameters().conf_low_pct_rows
         self.conf_rfi_threshold = Parameters().conf_rfi_threshold
         self.conf_dominant_y_pct = Parameters().conf_dominant_y_pct
+        self.conf_large_group = Parameters().conf_large_group
+        self.conf_high_score = Parameters().conf_high_score
 
     def calc_fds(self):
         
@@ -26,7 +28,7 @@ class FunctionalDependencyDiscovery:
             self.name: self.data_frame
         }
         
-        results = discover_all_fds(data_frames, threshold_table=self.threshold_table, arity=self.arity, include_nulls=self.include_nulls, fd_threshold=self.fd_threshold, bin_columns = self.bin_columns, workers=self.workers, sample=self.sample, sample_size=self.sample_size, conf_dominant_y_pct=self.conf_dominant_y_pct, conf_rfi_threshold=self.conf_rfi_threshold, conf_low_pct_rows=self.conf_low_pct_rows)
+        results = discover_all_fds(data_frames, threshold_table=self.threshold_table, arity=self.arity, include_nulls=self.include_nulls, fd_threshold=self.fd_threshold, bin_columns = self.bin_columns, workers=self.workers, sample=self.sample, sample_size=self.sample_size, conf_dominant_y_pct=self.conf_dominant_y_pct, conf_rfi_threshold=self.conf_rfi_threshold, conf_low_pct_rows=self.conf_low_pct_rows, conf_high_score=self.conf_high_score, conf_large_group=self.conf_large_group)
     
         self.results = results[self.name].results
 
@@ -71,6 +73,8 @@ class FunctionalDependencyDiscovery:
         self.conf_dominant_y_pct = json["conf_dominant_y_pct"]
         self.conf_rfi_threshold = json["conf_rfi_threshold"]
         self.conf_low_pct_rows = json["conf_low_pct_rows"]
+        self.conf_large_group = json["conf_large_group"]
+        self.conf_high_score = json["conf_high_score"]
 
     def get_parameters(self):
 
@@ -85,7 +89,9 @@ class FunctionalDependencyDiscovery:
             "arity": self.arity,
             "conf_low_pct_rows": self.conf_low_pct_rows,
             "conf_rfi_threshold": self.conf_rfi_threshold,
-            "conf_dominant_y_pct": self.conf_dominant_y_pct
+            "conf_dominant_y_pct": self.conf_dominant_y_pct,
+            "conf_large_group": self.conf_large_group,
+            "conf_high_score": self.conf_high_score
         }
 
         return par

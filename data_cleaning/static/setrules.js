@@ -198,7 +198,9 @@ $(document).ready(function () {
                 arity: parseInt($("#arity").val()),
                 conf_dominant_y_pct: parseFloat($("#confdominant").val()),
                 conf_rfi_threshold: parseFloat($("#confrfi").val()),
-                conf_low_pct_rows: parseFloat($("#confrows").val())
+                conf_low_pct_rows: parseFloat($("#confrows").val()),
+                conf_high_score: parseFloat($("#confhighscore").val()),
+                conf_large_group: parseFloat($("#conflargegroup").val())
             })
         });
 
